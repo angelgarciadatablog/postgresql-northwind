@@ -1,0 +1,10 @@
+# Credenciales — nunca versionar
+.env
+.env.local
+
+# Postgres / dumps locales
+*.dump
+*.backup
+
+# Sistema
+.DS_Store

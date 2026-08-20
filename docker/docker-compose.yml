@@ -1,0 +1,30 @@
+# Levanta un PostgreSQL 17 con Northwind ya cargado.
+#
+#   cd docker && docker compose up -d
+#
+# El seed se aplica solo la primera vez, cuando el volumen está vacío.
+# Para recargar desde cero:  docker compose down -v && docker compose up -d
+#
+# Puerto 5433 (no 5432) para no chocar con un PostgreSQL instalado en la máquina.
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: northwind-db
+    environment:
+      POSTGRES_USER: northwind
+      POSTGRES_PASSWORD: northwind
+      POSTGRES_DB: northwind
+    ports:
+      - "5433:5432"
+    volumes:
+      - northwind_data:/var/lib/postgresql/data
+      - ../seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U northwind -d northwind"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  northwind_data:
