@@ -121,7 +121,39 @@ psql -d northwind -f seed.sql
 
 No hay forma de "arruinar" la base de manera permanente.
 
-## 6. Qué se cambió respecto al Northwind original
+## 6. El esquema `practica`: para escribir, no para consultar
+
+Northwind sirve para **consultar**. Cuando toca aprender `INSERT`, `UPDATE`, `DELETE`, `CREATE TABLE` o `ALTER TABLE`, escribir sobre ella destruiría el dataset a mitad de camino.
+
+Para eso está `practica.sql`:
+
+```bash
+psql -d northwind -f practica.sql
+```
+
+Crea un esquema `practica` con una copia reducida de Northwind, sobre la que puedes hacer lo que quieras:
+
+| Tabla | Filas | Copia de |
+|---|---:|---|
+| `practica.categorias` | 8 | `categories` |
+| `practica.clientes` | 91 | `customers` |
+| `practica.productos` | 77 | `products` |
+| `practica.pedidos` | 830 | `orders` |
+| `practica.detalle_pedidos` | 2.155 | `order_details` |
+
+Después, al principio de cada sesión:
+
+```sql
+SET search_path TO practica, public;
+```
+
+**Las tablas se llaman distinto a las de Northwind a propósito.** Si la copia se llamara también `customers`, un `UPDATE customers ...` escrito sin cualificar el esquema podría caer en `public` y destruir el dataset. Con nombres en español ese error no llega a ejecutarse: `clientes` no existe en `public`.
+
+Las tablas se crean con sus restricciones completas —clave primaria, foráneas, `CHECK`, `DEFAULT` e `IDENTITY`—, no con un `CREATE TABLE AS`, que las perdería todas.
+
+Y como `seed.sql`, es su propio botón de reset: empieza con `DROP SCHEMA IF EXISTS practica CASCADE`. Vuelve a ejecutarlo y estás en el punto de partida.
+
+## 7. Qué se cambió respecto al Northwind original
 
 Este no es un volcado tal cual. Se corrigieron cosas que estorbaban para aprender:
 
@@ -140,7 +172,7 @@ Este no es un volcado tal cual. Se corrigieron cosas que estorbaban para aprende
 
 **Las restricciones son a propósito.** Intenta insertar una cantidad negativa o un cliente que no existe: la base te lo va a rechazar. Eso es exactamente lo que hace un motor relacional y lo que un almacén analítico (BigQuery, por ejemplo) **no** hace.
 
-## 7. Consultas para empezar
+## 8. Consultas para empezar
 
 ```sql
 -- ¿Quién le reporta a quién? (self-join)
@@ -177,6 +209,6 @@ ORDER BY puesto
 LIMIT 10;
 ```
 
-## 8. Licencia y origen
+## 9. Licencia y origen
 
 Los datos vienen de la base de ejemplo **Northwind** de Microsoft, publicada bajo **licencia MIT** en [microsoft/sql-server-samples](https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs). La adaptación a PostgreSQL parte del port de [pthom/northwind_psql](https://github.com/pthom/northwind_psql), con las correcciones descritas en la sección 6.
